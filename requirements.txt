@@ -1,0 +1,6 @@
+pyTelegramBotAPI
+aiohttp
+SQLAlchemy
+Telethon
+pandas
+openpyxl
