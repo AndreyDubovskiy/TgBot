@@ -84,6 +84,11 @@ class PostState(UserState):
                         list_photos = config_controller.LIST_POSTS[self.current_name]['photos']
                         list_videos = config_controller.LIST_POSTS[self.current_name]['videos']
                         entity = await self.client.get_entity(self.user_name)
+                        name_user = entity.first_name
+                        if entity.last_name:
+                            name_user += " "+entity.last_name
+                        text_post = text_post.replace("%name%", name_user)
+                        text_post = text_post.replace("%name_k%", name_user)
                         if list_photos and len(list_photos) == 1 and text_post:
                             with open(list_photos[0], 'rb') as photo_file:
                                 await self.client.send_file(entity, photo_file, caption=text_post,
@@ -132,10 +137,20 @@ class PostState(UserState):
                         text_post = config_controller.LIST_POSTS[self.current_name]['text']
                         list_photos = config_controller.LIST_POSTS[self.current_name]['photos']
                         list_videos = config_controller.LIST_POSTS[self.current_name]['videos']
+                        if text_post.count("%name_k%") != 0:
+                            if user.name_k == None or user.name_k == "":
+                                continue
+                            text_post = text_post.replace("%name_k%", user.name_k)
+
                         if user.tg_name != None:
                             entity = await self.client.get_entity(user.tg_name)
                         else:
                             entity = await self.client.get_entity(user.phone.split(",")[0])
+
+                        name_user = entity.first_name
+                        if entity.last_name:
+                            name_user += " " + entity.last_name
+                        text_post = text_post.replace("%name%", name_user)
                         if list_photos and len(list_photos) == 1 and text_post:
                             with open(list_photos[0], 'rb') as photo_file:
                                 await self.client.send_file(entity, photo_file, caption=text_post, silent=True)
@@ -168,10 +183,20 @@ class PostState(UserState):
                             text_post = config_controller.LIST_POSTS[self.current_name]['text']
                             list_photos = config_controller.LIST_POSTS[self.current_name]['photos']
                             list_videos = config_controller.LIST_POSTS[self.current_name]['videos']
+                            if text_post.count("%name_k%") != 0:
+                                if user.name_k == None or user.name_k == "":
+                                    continue
+                                text_post = text_post.replace("%name_k%", user.name_k)
+
                             if user.tg_name != None:
                                 entity = await self.client.get_entity(user.tg_name)
                             else:
                                 entity = await self.client.get_entity(user.phone.split(",")[0])
+
+                            name_user = entity.first_name
+                            if entity.last_name:
+                                name_user += " " + entity.last_name
+                            text_post = text_post.replace("%name%", name_user)
                             if list_photos and len(list_photos) == 1 and text_post:
                                 with open(list_photos[0], 'rb') as photo_file:
                                     await self.client.send_file(entity, photo_file, caption=text_post, silent=True)
@@ -279,6 +304,12 @@ class PostState(UserState):
                         list_photos = config_controller.LIST_POSTS[self.current_name]['photos']
                         list_videos = config_controller.LIST_POSTS[self.current_name]['videos']
                         entity = await self.client.get_entity(self.user_name)
+                        print(entity)
+                        name_user = entity.first_name
+                        if entity.last_name:
+                            name_user += " " + entity.last_name
+                        text_post = text_post.replace("%name%", name_user)
+                        text_post = text_post.replace("%name_k%", name_user)
                         if list_photos and len(list_photos) == 1 and text_post:
                             with open(list_photos[0], 'rb') as photo_file:
                                 await self.client.send_file(entity, photo_file, caption=text_post,
@@ -322,10 +353,20 @@ class PostState(UserState):
                         text_post = config_controller.LIST_POSTS[self.current_name]['text']
                         list_photos = config_controller.LIST_POSTS[self.current_name]['photos']
                         list_videos = config_controller.LIST_POSTS[self.current_name]['videos']
+                        if text_post.count("%name_k%") != 0:
+                            if user.name_k == None or user.name_k == "":
+                                continue
+                            text_post = text_post.replace("%name_k%", user.name_k)
+
                         if user.tg_name != None:
                             entity = await self.client.get_entity(user.tg_name)
                         else:
                             entity = await self.client.get_entity(user.phone.split(",")[0])
+
+                        name_user = entity.first_name
+                        if entity.last_name:
+                            name_user += " " + entity.last_name
+                        text_post = text_post.replace("%name%", name_user)
                         if list_photos and len(list_photos) == 1 and text_post:
                             with open(list_photos[0], 'rb') as photo_file:
                                 await self.client.send_file(entity, photo_file, caption=text_post, silent=True)
@@ -359,10 +400,20 @@ class PostState(UserState):
                             text_post = config_controller.LIST_POSTS[self.current_name]['text']
                             list_photos = config_controller.LIST_POSTS[self.current_name]['photos']
                             list_videos = config_controller.LIST_POSTS[self.current_name]['videos']
+                            if text_post.count("%name_k%") != 0:
+                                if user.name_k == None or user.name_k == "":
+                                    continue
+                                text_post = text_post.replace("%name_k%", user.name_k)
+
                             if user.tg_name != None:
                                 entity = await self.client.get_entity(user.tg_name)
                             else:
                                 entity = await self.client.get_entity(user.phone.split(",")[0])
+
+                            name_user = entity.first_name
+                            if entity.last_name:
+                                name_user += " " + entity.last_name
+                            text_post = text_post.replace("%name%", name_user)
                             if list_photos and len(list_photos) == 1 and text_post:
                                 with open(list_photos[0], 'rb') as photo_file:
                                     await self.client.send_file(entity, photo_file, caption=text_post, silent=True)
@@ -413,10 +464,22 @@ class PostState(UserState):
                         text_post = config_controller.LIST_POSTS[self.current_name]['text']
                         list_photos = config_controller.LIST_POSTS[self.current_name]['photos']
                         list_videos = config_controller.LIST_POSTS[self.current_name]['videos']
+
+                        if text_post.count("%name_k%") != 0:
+                            if user.name_k == None or user.name_k == "":
+                                continue
+                            text_post = text_post.replace("%name_k%", user.name_k)
+
                         if user.tg_name != None:
                             entity = await self.client.get_entity(user.tg_name)
                         else:
                             entity = await self.client.get_entity(user.phone.split(",")[0])
+
+                        name_user = entity.first_name
+                        if entity.last_name:
+                            name_user += " "+entity.last_name
+                        text_post = text_post.replace("%name%", name_user)
+
                         if list_photos and len(list_photos) == 1 and text_post:
                             with open(list_photos[0], 'rb') as photo_file:
                                 await self.client.send_file(entity, photo_file, caption=text_post, silent=True)
@@ -450,10 +513,20 @@ class PostState(UserState):
                             text_post = config_controller.LIST_POSTS[self.current_name]['text']
                             list_photos = config_controller.LIST_POSTS[self.current_name]['photos']
                             list_videos = config_controller.LIST_POSTS[self.current_name]['videos']
+                            if text_post.count("%name_k%") != 0:
+                                if user.name_k == None or user.name_k == "":
+                                    continue
+                                text_post = text_post.replace("%name_k%", user.name_k)
+
                             if user.tg_name != None:
                                 entity = await self.client.get_entity(user.tg_name)
                             else:
                                 entity = await self.client.get_entity(user.phone.split(",")[0])
+
+                            name_user = entity.first_name
+                            if entity.last_name:
+                                name_user += " " + entity.last_name
+                            text_post = text_post.replace("%name%", name_user)
                             if list_photos and len(list_photos) == 1 and text_post:
                                 with open(list_photos[0], 'rb') as photo_file:
                                     await self.client.send_file(entity, photo_file, caption=text_post, silent=True)

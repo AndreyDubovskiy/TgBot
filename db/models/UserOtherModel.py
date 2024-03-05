@@ -11,15 +11,17 @@ class UserOtherModel(BaseModel):
     count: Mapped[int] = mapped_column(Integer())
     fromchanel: Mapped[str] = mapped_column(String(255), nullable=True)
     phone: Mapped[str] = mapped_column(String(255), nullable=True)
+    name_k: Mapped[str] = mapped_column(String(255), nullable=True)
 
 
-    def __init__(self,name: str, tg_id: str, tg_name: str, fromchanel: str = None, phone: str = None):
+    def __init__(self,name: str, tg_id: str, tg_name: str, fromchanel: str = None, phone: str = None, name_k: str = None):
         self.tg_id = tg_id
         self.tg_name = tg_name
         self.name = name
         self.count = 0
         self.fromchanel = fromchanel
         self.phone = phone
+        self.name_k = name_k
 
     def __repr__(self):
         return f"<UserModel(id={self.id}, tg_id={self.tg_id}, tg_name={self.tg_name})>"

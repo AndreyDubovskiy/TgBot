@@ -88,4 +88,5 @@ def generate_markup_menu():
     markup.add(types.InlineKeyboardButton(text="Зміна часу затримки", callback_data="/time"))
     markup.add(types.InlineKeyboardButton(text="Парсинг чатів на акаунті", callback_data="/parsechats"))
     markup.add(types.InlineKeyboardButton(text="Генерація таблиці Exel", callback_data="/exel"))
+    markup.add(types.InlineKeyboardButton(text="Зміна імен у кличному", callback_data="/exelinput"))
     return markup

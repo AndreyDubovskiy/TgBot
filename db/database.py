@@ -71,6 +71,12 @@ def get_user_by_phone(phone: str):
         res: List[UserModel] = session.scalars(query).all()
     return res
 
+def get_userother_by_name_tg(tg_name: str):
+    with Session(engine) as session:
+        query = select(UserOtherModel).where(UserOtherModel.tg_name == tg_name)
+        res: List[UserOtherModel] = session.scalars(query).all()
+    return res
+
 def get_userother_by_id_tg(id_tg: str):
     with Session(engine) as session:
         query = select(UserOtherModel).where(UserOtherModel.tg_id == id_tg)
