@@ -1,3 +1,5 @@
+import sys
+
 import config_controller
 from telebot.async_telebot import AsyncTeleBot
 from telebot import types
@@ -8,13 +10,19 @@ import os
 
 
 
-tokkey = '6729587033:AAEz_7G1v3mZt2mjCGzaQ7Wk079K6VMqEXE'
+#tokkey = '6729587033:AAEz_7G1v3mZt2mjCGzaQ7Wk079K6VMqEXE'
 
-#tokkey = os.environ.get('BOT_TOKEN')
+tokkey = os.environ.get('BOT_TOKEN')
 
 bot = AsyncTeleBot(tokkey)
 
 state_list = {}
+
+@bot.message_handler(commands=['off'])
+async def off(message):
+    await bot.send_message(chat_id=message.chat.id, text="Вимикаю...")
+    sys.exit()
+
 
 @bot.message_handler(commands=['passwordadmin','help', 'passwordmoder', 'helpadmin', 'log', 'textafter', 'start', 'texthelp', 'texthello', 'textcontact','menu'])
 async def passwordadmin(message):
