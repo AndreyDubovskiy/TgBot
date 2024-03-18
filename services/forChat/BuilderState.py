@@ -12,6 +12,7 @@ from services.forChat.TimeState import TimeState
 from services.forChat.ParseChatsState import ParseChatsState
 from services.forChat.GenerateExelState import GenerateExelState
 from services.forChat.EditNameUsersState import EditNameUsersState
+from services.forChat.ProxyState import ProxyState
 
 class BuilderState:
     def __init__(self, bot: AsyncTeleBot):
@@ -30,5 +31,6 @@ class BuilderState:
             "/parsechats": ParseChatsState,
             "/exel": GenerateExelState,
             "/exelinput": EditNameUsersState,
+            "/proxys": ProxyState,
         }
         return clssses[data_txt](user_id, user_chat_id, bot, user_name)

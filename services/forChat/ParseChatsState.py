@@ -99,43 +99,14 @@ class ParseChatsState(UserState):
                             async for message in self.client.iter_messages(entity.id, limit=10000):
                                 tmp_count += 1
                                 print(tmp_count, name_chanel)
-                                if message.__class__.__name__ == "Message":
-                                    if message.from_id.__class__.__name__ == "PeerUser":
-                                        if (not (message.from_id.user_id in users_list)) and (not(message.from_id.user_id in ban_list)):
-                                            users_list.append(message.from_id.user_id)
-                                            try:
-                                                user = await self.client.get_entity(message.from_id.user_id)
-                                                username = user.username
-                                                if username:
-                                                    if user.last_name == None:
-                                                        db.create_other_user(user.first_name, user.id,
-                                                                             user.username,
-                                                                             name_chanel, user.phone)
-                                                    else:
-                                                        db.create_other_user(
-                                                            user.first_name + " " + user.last_name,
-                                                            user.id, user.username, name_chanel,
-                                                            user.phone)
-                                                    user_count += 1
-                                                if user_count % 10 == 0:
-                                                    await self.bot.edit_message_text(
-                                                        text="Триває парсинг чатів...\nЗараз парситься чат: " + str(
-                                                            i.entity.title) + "\nЗ цього чата спарсено контактів: " + str(
-                                                            user_count - last_user_count) + "\nВсього спарсено контактів: " + str(
-                                                            user_count), chat_id=self.user_chat_id,
-                                                        message_id=message_tmp.id)
-                                            except FloodWaitError as ex:
-                                                time_sleep = int(str(ex).split("A wait of ")[1].split(" ")[0])
-                                                print("WAIT", time_sleep)
-                                                await self.bot.edit_message_text(
-                                                    text="Триває парсинг чатів...\nЗараз парситься чат: " + str(
-                                                        i.entity.title) + "\nЗ цього чата спарсено контактів: " + str(
-                                                        user_count - last_user_count) + "\nВсього спарсено контактів: " + str(
-                                                        user_count)+"\n(Анти флуд, очікування " + str(time_sleep) + " секунд)", chat_id=self.user_chat_id,
-                                                    message_id=message_tmp.id)
-                                                await asyncio.sleep(time_sleep + 5)
+                                try:
+                                    if message.__class__.__name__ == "Message":
+                                        if message.from_id.__class__.__name__ == "PeerUser":
+                                            if (not (message.from_id.user_id in users_list)) and (not(message.from_id.user_id in ban_list)):
+                                                users_list.append(message.from_id.user_id)
                                                 try:
                                                     user = await self.client.get_entity(message.from_id.user_id)
+                                                    print(message)
                                                     username = user.username
                                                     if username:
                                                         if user.last_name == None:
@@ -148,13 +119,47 @@ class ParseChatsState(UserState):
                                                                 user.id, user.username, name_chanel,
                                                                 user.phone)
                                                         user_count += 1
-                                                except:
-                                                    pass
-                                            except Exception as e:
-                                                errors += 1
-                                                print(f"Error: {e}")
-                                                if errors > 10:
-                                                    break
+                                                    if user_count % 10 == 0:
+                                                        await self.bot.edit_message_text(
+                                                            text="Триває парсинг чатів...\nЗараз парситься чат: " + str(
+                                                                i.entity.title) + "\nЗ цього чата спарсено контактів: " + str(
+                                                                user_count - last_user_count) + "\nВсього спарсено контактів: " + str(
+                                                                user_count), chat_id=self.user_chat_id,
+                                                            message_id=message_tmp.id)
+                                                except FloodWaitError as ex:
+                                                    time_sleep = int(str(ex).split("A wait of ")[1].split(" ")[0])
+                                                    print("WAIT", time_sleep)
+                                                    await self.bot.edit_message_text(
+                                                        text="Триває парсинг чатів...\nЗараз парситься чат: " + str(
+                                                            i.entity.title) + "\nЗ цього чата спарсено контактів: " + str(
+                                                            user_count - last_user_count) + "\nВсього спарсено контактів: " + str(
+                                                            user_count)+"\n(Анти флуд, очікування " + str(time_sleep) + " секунд)", chat_id=self.user_chat_id,
+                                                        message_id=message_tmp.id)
+                                                    await asyncio.sleep(time_sleep + 5)
+                                                    try:
+                                                        user = await self.client.get_entity(message.from_id.user_id)
+                                                        username = user.username
+                                                        if username:
+                                                            if user.last_name == None:
+                                                                db.create_other_user(user.first_name, user.id,
+                                                                                     user.username,
+                                                                                     name_chanel, user.phone)
+                                                            else:
+                                                                db.create_other_user(
+                                                                    user.first_name + " " + user.last_name,
+                                                                    user.id, user.username, name_chanel,
+                                                                    user.phone)
+                                                            user_count += 1
+                                                    except:
+                                                        pass
+                                                except Exception as e:
+                                                    errors += 1
+                                                    print(f"Error: {e}")
+                                                    print("ERRORS", errors)
+                                                    if errors > 1000:
+                                                        break
+                                except Exception as ex:
+                                    print(ex)
                         except:
                             channels_errors_count += 1
                     for tt in ban_list:
@@ -166,7 +171,8 @@ class ParseChatsState(UserState):
                             user_count - last_user_count) + "\nВсього спарсено контактів: " + str(
                             user_count), chat_id=self.user_chat_id,
                         message_id=message_tmp.id)
-                except:
+                except Exception as ex:
+                    print(ex)
                     channels_errors_count += 1
 
         await self.client.disconnect()

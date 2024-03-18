@@ -5,6 +5,7 @@ from db.models.BaseModel import BaseModel
 from db.models.UserModel import UserModel
 from db.models.UserVerifyModel import UserVerifyModel
 from db.models.UserOtherModel import UserOtherModel
+from db.models.ProxyModel import ProxyModel
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from sqlalchemy import select
@@ -14,6 +15,48 @@ import services.testing.PhoneNumber as pn
 engine = create_engine("sqlite:///mainbase.db", echo=False)
 
 BaseModel.metadata.create_all(engine)
+
+def get_all_proxy():
+    with Session(engine) as session:
+        query = select(ProxyModel)
+        res: List[ProxyModel] = session.scalars(query).all()
+    return res
+def get_proxy_by_ip_port(ip:str, port:str):
+    with Session(engine) as session:
+        query = select(ProxyModel).where(ProxyModel.ip == ip).where(ProxyModel.port == port)
+        res: List[ProxyModel] = session.scalars(query).all()
+    return res
+
+def get_ipport_proxys_list():
+    list_proxy = get_all_proxy()
+    list_names = []
+    for proxy in list_proxy:
+        list_names.append(proxy.ip+":"+proxy.port)
+    return list_names
+def is_proxy(ip:str, port:str):
+    tmp = get_proxy_by_ip_port(ip, port)
+    return len(tmp) != 0
+
+def delete_proxy(ip:str, port:str):
+    tmp = get_proxy_by_ip_port(ip, port)
+    if len(tmp) == 0:
+        return False
+    with Session(engine) as session:
+        query = select(ProxyModel).where(ProxyModel.ip == ip).where(ProxyModel.port == port)
+        proxy: ProxyModel = session.scalars(query).first()
+        session.delete(proxy)
+        session.commit()
+    return True
+def create_proxy(ip:str, port:str, login:str, password:str, type_proxy: int):
+    tmp = get_proxy_by_ip_port(ip, port)
+    if len(tmp) != 0:
+        return
+
+    with Session(engine) as session:
+        proxy = ProxyModel(ip, port, login, password, type_proxy)
+        session.add(proxy)
+        session.commit()
+    return
 
 
 def add_count_by_tg_id(tg_id: str):
@@ -40,21 +83,30 @@ def add_count_otheruser_by_tg_id(tg_id: str):
         else:
             return 0
 
-def get_user_verify_order():
+def get_user_verify_order(is_name_k = False):
     with Session(engine) as session:
-        query = select(UserVerifyModel).order_by(UserVerifyModel.count)
+        if not is_name_k:
+            query = select(UserVerifyModel).order_by(UserVerifyModel.count)
+        else:
+            query = select(UserVerifyModel).where(UserOtherModel.name_k != None).order_by(UserVerifyModel.count)
         res: List[UserVerifyModel] = session.scalars(query).all()
     return res
 
-def get_user_other_order():
+def get_user_other_order(is_name_k = False):
     with Session(engine) as session:
-        query = select(UserOtherModel).order_by(UserOtherModel.count)
+        if not is_name_k:
+            query = select(UserOtherModel).order_by(UserOtherModel.count)
+        else:
+            query = select(UserOtherModel).where(UserOtherModel.name_k != None).order_by(UserOtherModel.count)
         res: List[UserOtherModel] = session.scalars(query).all()
     return res
 
-def get_user_other_order_by_chats(chat: str):
+def get_user_other_order_by_chats(chat: str, is_name_k = False):
     with Session(engine) as session:
-        query = select(UserOtherModel).where(UserOtherModel.fromchanel == chat).order_by(UserOtherModel.count)
+        if not is_name_k:
+            query = select(UserOtherModel).where(UserOtherModel.fromchanel == chat).order_by(UserOtherModel.count)
+        else:
+            query = select(UserOtherModel).where(UserOtherModel.fromchanel == chat).where(UserOtherModel.name_k != None).order_by(UserOtherModel.count)
         res: List[UserOtherModel] = session.scalars(query).all()
     return res
 
@@ -176,3 +228,9 @@ def get_other_user_chats():
         query = select(UserOtherModel.fromchanel, func.count(UserOtherModel.id)).group_by(UserOtherModel.fromchanel)
         res = session.scalars(query).all()
     return res
+def get_other_user_chats_with_len(by_chat):
+    users = get_user_other_order_by_chats(by_chat)
+    with Session(engine) as session:
+        query = select(UserOtherModel).where(UserOtherModel.fromchanel == by_chat).where(UserOtherModel.name_k != None)
+        tmp: List[UserOtherModel] = session.scalars(query).all()
+    return len(users), len(tmp)

@@ -9,17 +9,27 @@ class TgAccState(UserState):
         self.is_current = False
         self.api_id = "24209092"
         self.api_hash = "822ed15f01ee35ae8a50d750d3e8451d"
-        return Response(text="Список акаунтів:", buttons=markups.generate_tg_acc_menu())
+        self.current_page_acc = 0
+        self.max_on_page = 10
+        return Response(text="Список акаунтів:", buttons=markups.generate_tg_acc_menu(with_add=True, with_ready=False))
 
     async def next_btn_clk(self, data_btn: str):
         if data_btn == "/cancel":
             if self.is_current:
                 return Response(redirect="/tgacc")
             return Response(redirect="/menu")
+        elif data_btn == "/accnext":
+            if len(config_controller.LIST_TG_ACC)-((self.current_page_acc+1)*self.max_on_page) > 0:
+                self.current_page_acc+=1
+            return Response(text="Список акаунтів:", buttons=markups.generate_tg_acc_menu(self.current_page_acc*self.max_on_page, self.max_on_page, with_add=True, with_ready=False))
+        elif data_btn =="/accprev":
+            if self.current_page_acc > 0:
+                self.current_page_acc-=1
+            return Response(text="Список акаунтів:", buttons=markups.generate_tg_acc_menu(self.current_page_acc*self.max_on_page, self.max_on_page, with_add=True, with_ready=False))
         elif data_btn in config_controller.LIST_TG_ACC:
             self.is_current = True
             self.current_session = data_btn
-            return Response(text="Акаунт: " + self.current_session, buttons=markups.generate_tg_acc_semimenu())
+            return Response(text="Акаунт: " + self.current_session + "\nТелефон: "+ config_controller.LIST_TG_ACC[self.current_session]['phone'] +"\nПроксі: " + str(config_controller.LIST_TG_ACC[self.current_session].get("proxy", None)), buttons=markups.generate_tg_acc_semimenu())
         elif data_btn == "/add":
             self.edit = "session_name"
             return Response(text="Введіть наступним повідомленням назву акаунта (для себе, бажано латинськими літерами):", buttons=markups.generate_cancel())

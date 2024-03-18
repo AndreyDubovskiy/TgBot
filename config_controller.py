@@ -35,6 +35,13 @@ def write_ini():
     with open('config.bin', 'wb') as configfile:
         pickle.dump(config, configfile)
 
+def set_proxy_acc(name: str, ipport:str = None):
+    LIST_TG_ACC[name]["proxy"] = ipport
+    write_ini()
+
+def get_proxy_acc(name: str):
+    return LIST_TG_ACC[name].get("proxy", None)
+
 def read_ini():
     global PASSWORD_ADMIN, LIST_POSTS, LIST_TG_ACC, TIME_MSG_COOLDOWN
     with open('config.bin', 'rb') as configfile:

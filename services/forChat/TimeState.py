@@ -5,7 +5,7 @@ import config_controller
 
 class TimeState(UserState):
     async def start_msg(self):
-        return Response(text="Введіть наступним повідомленням час затримки між повідомленнями під час розсилки (у секундах, стандартно 180 секунд (3 хв.)):", is_end=True, buttons=markups.generate_cancel())
+        return Response(text="Введіть наступним повідомленням час затримки між повідомленнями під час розсилки (у секундах, стандартно 180 секунд (3 хв.)):", buttons=markups.generate_cancel())
 
     async def next_btn_clk(self, data_btn: str):
         if data_btn == "/cancel":

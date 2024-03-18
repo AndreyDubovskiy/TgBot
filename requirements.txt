@@ -4,3 +4,4 @@ SQLAlchemy
 Telethon
 pandas
 openpyxl
+python-socks
