@@ -139,14 +139,28 @@ from flask import Flask, request
 server = Flask(__name__)
 
 bot_url = os.environ.get('BOT_URL')
+
+
+async def new_updates(data):
+    await bot.process_new_updates([types.Update.de_json(data)])
+
 @server.route("/bot", methods=['POST'])
-async def getMessage():
-    await bot.process_new_updates([types.Update.de_json(request.stream.read().decode("utf-8"))])
+def getMessage():
+    data = request.stream.read().decode("utf-8")
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(new_updates(data))
     return "!", 200
-@server.route("/")
-async def webhook():
+
+async def few_work():
     await bot.remove_webhook()
     await bot.set_webhook(url=bot_url)
+
+@server.route("/")
+def webhook():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(few_work())
     return "?", 200
 server.run(host="0.0.0.0", port=os.environ.get('PORT', 80))
 

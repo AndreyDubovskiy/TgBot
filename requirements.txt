@@ -5,4 +5,4 @@ Telethon
 pandas
 openpyxl
 python-socks
-flask[async]
+flask
