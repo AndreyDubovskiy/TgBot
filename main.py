@@ -131,4 +131,21 @@ async def handle_message(message: types.Message):
 config_controller.preload_config()
 
 import asyncio
-asyncio.run(bot.polling())
+# asyncio.run(bot.polling())
+
+
+from flask import Flask, request
+
+server = Flask(__name__)
+
+bot_url = os.environ.get('BOT_URL')
+@server.route("/bot", methods=['POST'])
+def getMessage():
+    bot.process_new_updates([types.Update.de_json(request.stream.read().decode("utf-8"))])
+    return "!", 200
+@server.route("/")
+def webhook():
+    bot.remove_webhook()
+    bot.set_webhook(url=bot_url)
+    return "?", 200
+server.run(host="0.0.0.0", port=os.environ.get('PORT', 80))
