@@ -140,12 +140,13 @@ server = Flask(__name__)
 
 bot_url = os.environ.get('BOT_URL')
 @server.route("/bot", methods=['POST'])
-def getMessage():
-    bot.process_new_updates([types.Update.de_json(request.stream.read().decode("utf-8"))])
+async def getMessage():
+    await bot.process_new_updates([types.Update.de_json(request.stream.read().decode("utf-8"))])
     return "!", 200
 @server.route("/")
-def webhook():
-    bot.remove_webhook()
-    bot.set_webhook(url=bot_url)
+async def webhook():
+    await bot.remove_webhook()
+    await bot.set_webhook(url=bot_url)
     return "?", 200
 server.run(host="0.0.0.0", port=os.environ.get('PORT', 80))
+
