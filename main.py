@@ -158,7 +158,7 @@ async def hello1():
 async def json():
     data = await request.stream.read().decode("utf-8")
     await bot.process_new_updates([types.Update.de_json(data)])
-    return {"hello": "world"}
+    return "!"
 
 if __name__ == "__main__":
     server.run()
