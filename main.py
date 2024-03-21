@@ -10,7 +10,7 @@ import os
 
 
 
-#tokkey = '6729587033:AAEz_7G1v3mZt2mjCGzaQ7Wk079K6VMqEXE'
+#tokkey = '6729587033:AAESDJSwGSgA8zxfLLEW1sOvg6HPF68LzB4'
 
 tokkey = os.environ.get('BOT_TOKEN')
 
@@ -117,12 +117,18 @@ async def handle_message(message: types.Message):
         user_name = None
     id_list = user_id+user_chat_id
     text = message.text
+    print("HANDLE", text, id_list)
     if state_list.get(id_list, None) == None:
+        print("NONE", "BUILD")
         builder = BuilderState(bot)
         state = builder.create_state(text, user_id, user_chat_id, bot, user_name)
+        print("BUILD", state.__class__.__name__)
         state_list[id_list] = state
+        print("START res")
         res: Response = await state.start_msg()
+        print("END res")
         await chek_response(user_chat_id, user_id, id_list, res, user_name)
+        print("CHECK")
     else:
         state: UserState = state_list[id_list]
         res: Response = await state.next_msg(text)
@@ -131,36 +137,33 @@ async def handle_message(message: types.Message):
 config_controller.preload_config()
 
 import asyncio
-# asyncio.run(bot.polling())
+#asyncio.run(bot.polling())
 
 
-from flask import Flask, request
-
-server = Flask(__name__)
-
+from quart import Quart, render_template, websocket, request
 bot_url = os.environ.get('BOT_URL')
-
-
-async def new_updates(data):
-    await bot.process_new_updates([types.Update.de_json(data)])
-
-@server.route("/bot", methods=['POST'])
-def getMessage():
-    data = request.stream.read().decode("utf-8")
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(new_updates(data))
-    return "!", 200
-
-async def few_work():
-    await bot.remove_webhook()
-    await bot.set_webhook(url=bot_url)
+server = Quart(__name__)
 
 @server.route("/")
-def webhook():
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(few_work())
-    return "?", 200
-server.run(host="0.0.0.0", port=os.environ.get('PORT', 80))
+async def hello():
+    return "Hi Gitler"
+
+@server.route("/start")
+async def hello1():
+    await bot.remove_webhook()
+    await bot.set_webhook(url=bot_url)
+    return "GOOD START"
+
+@server.route("/bot", methods=['POST'])
+async def json():
+    data = await request.stream.read().decode("utf-8")
+    await bot.process_new_updates([types.Update.de_json(data)])
+    return {"hello": "world"}
+
+if __name__ == "__main__":
+    server.run()
+
+
+
+
 
