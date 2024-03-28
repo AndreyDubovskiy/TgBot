@@ -234,3 +234,55 @@ def get_other_user_chats_with_len(by_chat):
         query = select(UserOtherModel).where(UserOtherModel.fromchanel == by_chat).where(UserOtherModel.name_k != None)
         tmp: List[UserOtherModel] = session.scalars(query).all()
     return len(users), len(tmp)
+
+def count_to_new_user_other_by_chat(chat:str, is_name_k:bool = False):
+    users = get_user_other_order_by_chats(chat, is_name_k)
+    if len(users) > 0:
+        max_count = users[-1].count
+        with Session(engine) as session:
+            if not is_name_k:
+                query = select(UserOtherModel).where(UserOtherModel.fromchanel == chat).where(UserOtherModel.count < max_count)
+            else:
+                query = select(UserOtherModel).where(UserOtherModel.fromchanel == chat).where(UserOtherModel.name_k != None).where(UserOtherModel.count < max_count)
+            res = session.scalars(query).all()
+        if len(res) == 0:
+            return len(users)
+        else:
+            return len(res)
+    else:
+        return 0
+
+
+def count_to_new_user_other(is_name_k:bool = False):
+    users = get_user_other_order(is_name_k)
+    if len(users) > 0:
+        max_count = users[-1].count
+        with Session(engine) as session:
+            if not is_name_k:
+                query = select(UserOtherModel).where(UserOtherModel.count < max_count)
+            else:
+                query = select(UserOtherModel).where(UserOtherModel.name_k != None).where(UserOtherModel.count < max_count)
+            res = session.scalars(query).all()
+        if len(res) == 0:
+            return len(users)
+        else:
+            return len(res)
+    else:
+        return 0
+
+def count_to_new_verify_user_by_chat(is_name_k:bool = False):
+    users = get_user_verify_order(is_name_k)
+    if len(users) > 0:
+        max_count = users[-1].count
+        with Session(engine) as session:
+            if not is_name_k:
+                query = select(UserVerifyModel).where(UserVerifyModel.count < max_count)
+            else:
+                query = select(UserVerifyModel).where(UserVerifyModel.name_k != None).where(UserVerifyModel.count < max_count)
+            res = session.scalars(query).all()
+        if len(res) == 0:
+            return len(users)
+        else:
+            return len(res)
+    else:
+        return 0

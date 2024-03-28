@@ -328,8 +328,14 @@ class PostState(UserState):
                 self.count_send = int(message)
                 text_post: str = config_controller.LIST_POSTS[self.current_name]['text']
                 list_users = db.get_user_verify_order((text_post.count("%name_k%") > 0))
-                await self.multiple_user_send(self.clients, self.user_chat_id, self.count_send, list_users, self.current_name)
-                return Response(text="Розсилка закінчена!", redirect="/menu")
+                count_new = db.count_to_new_verify_user_by_chat((text_post.count("%name_k%") > 0))
+                if self.count_send > count_new:
+                    self.list_users_tmp = list_users
+                    self.is_add_other = False
+                    return Response(text="Ви хочете розіслати " + str(self.count_send) + " людям.\nДо закінчення черги та повернення до початку залишилось " +str(count_new) + " людини.\nМожливе повторне відсилання повідомлення!\n\nВи впевненні що хочете продовжити?", buttons=markups.generate_yes_no())
+                else:
+                    await self.multiple_user_send(self.clients, self.user_chat_id, self.count_send, list_users, self.current_name)
+                    return Response(text="Розсилка закінчена!", redirect="/menu")
             except:
                 return Response(text="Ви впевненні, що ввели число правильно? Спробуйте ще раз:", buttons=markups.generate_cancel())
 
@@ -339,6 +345,9 @@ class PostState(UserState):
                 return Response(is_end=True, redirect="/menu")
             else:
                 return Response(is_end=True, redirect="/postlist")
+        elif data_btn == "/yes":
+            await self.multiple_user_send(self.clients, self.user_chat_id, self.count_send, self.list_users_tmp, self.current_name, self.is_add_other)
+            return Response(text="Розсилка закінчена!", redirect="/menu")
         elif data_btn == "/accnext":
             if len(config_controller.LIST_TG_ACC)-((self.current_page_acc+1)*self.max_on_page) > 0:
                 self.current_page_acc+=1
@@ -408,22 +417,6 @@ class PostState(UserState):
                     return Response(text=self.unauth_clients_name[
                                          0]+" ["+config_controller.LIST_TG_ACC[self.unauth_clients_name[
                                          0]]['phone']+"]" + "\nНа акаунт має прийти пароль, уведіть його у форматі 1.2.3.4.5.6, (це приклад якби у вас був пароль 123456):")
-            # self.current_session = data_btn
-            # self.client = TelegramClient(session=self.current_session, api_id=config_controller.LIST_TG_ACC[self.current_session]["api_id"], api_hash=config_controller.LIST_TG_ACC[self.current_session]["api_hash"])
-            # await self.client.connect()
-            # if not await self.client.is_user_authorized():
-            #     self.hash_phone = await self.client.send_code_request(config_controller.LIST_TG_ACC[self.current_session]["phone"])
-            #     self.edit = "code_enter"
-            #     return Response(text="На акаунт має прийти пароль, уведіть його у форматі 1.2.3.4.5.6, (це приклад якби у вас був пароль 123456):")
-            # else:
-            #     if not self.is_test:
-            #         self.edit = "count_send"
-            #         list_users = db.get_all_verify_users()
-            #         list_other = db.get_user_other_order()
-            #         return Response(text="Введіть кількість людей, котрим буде розсилатись пост:\n" + str(
-            #             len(list_users)) + " людей на даний момент в базі (Ваші люди, які парсились з таблиці ексель)\n" + str(len(list_other)) + " людей з інших чатів у базі", buttons=markups.generate_cancel())
-            #     else:
-            #         await self.test_message_to_me(self.user_chat_id, self.current_name, self.user_name)
         elif data_btn == "/ready":
             await self.init_clients(self.clients_names)
             if len(self.unauth_clients_name) == 0:
@@ -440,8 +433,18 @@ class PostState(UserState):
             try:
                 text_post: str = config_controller.LIST_POSTS[self.current_name]['text']
                 list_users = db.get_user_other_order((text_post.count("%name_k%") > 0))
-                await self.multiple_user_send(self.clients, self.user_chat_id, self.count_send, list_users, self.current_name, is_add_other=True)
-                return Response(text="Розсилка закінчена!", redirect="/menu")
+                count_new = db.count_to_new_user_other((text_post.count("%name_k%") > 0))
+                if self.count_send > count_new:
+                    self.list_users_tmp = list_users
+                    self.is_add_other = True
+                    return Response(text="Ви хочете розіслати " + str(
+                        self.count_send) + " людям.\nДо закінчення черги та повернення до початку залишилось " + str(
+                        count_new) + " людини.\nМожливе повторне відсилання повідомлення!\n\nВи впевненні що хочете продовжити?",
+                                    buttons=markups.generate_yes_no())
+                else:
+                    await self.multiple_user_send(self.clients, self.user_chat_id, self.count_send, list_users,
+                                                  self.current_name, is_add_other=True)
+                    return Response(text="Розсилка закінчена!", redirect="/menu")
             except Exception as ex:
                 print(ex)
                 return Response(text="Сталася помилка!", redirect="/menu")
@@ -451,8 +454,18 @@ class PostState(UserState):
             try:
                 text_post: str = config_controller.LIST_POSTS[self.current_name]['text']
                 list_users = db.get_user_other_order_by_chats(self.chat_send, (text_post.count("%name_k%") > 0))
-                await self.multiple_user_send(self.clients, self.user_chat_id, self.count_send, list_users, self.current_name, is_add_other=True)
-                return Response(text="Розсилка закінчена!", redirect="/menu")
+                count_new = db.count_to_new_user_other_by_chat(self.chat_send, (text_post.count("%name_k%") > 0))
+                if self.count_send > count_new:
+                    self.list_users_tmp = list_users
+                    self.is_add_other = True
+                    return Response(text="Ви хочете розіслати " + str(
+                        self.count_send) + " людям.\nДо закінчення черги та повернення до початку залишилось " + str(
+                        count_new) + " людини.\nМожливе повторне відсилання повідомлення!\n\nВи впевненні що хочете продовжити?",
+                                    buttons=markups.generate_yes_no())
+                else:
+                    await self.multiple_user_send(self.clients, self.user_chat_id, self.count_send, list_users,
+                                                  self.current_name, is_add_other=True)
+                    return Response(text="Розсилка закінчена!", redirect="/menu")
             except Exception as ex:
                 print(ex)
                 return Response(text="Сталася помилка!", redirect="/menu")

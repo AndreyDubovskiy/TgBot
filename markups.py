@@ -31,6 +31,11 @@ def generate_proxy_semimenu():
     markup.add(types.InlineKeyboardButton(text="❌Відмінити❌", callback_data="/cancel"))
     return markup
 
+def generate_yes_no():
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    markup.add(types.InlineKeyboardButton(text="✅Так✅", callback_data="/yes"))
+    markup.add(types.InlineKeyboardButton(text="❌Відмінити❌", callback_data="/cancel"))
+    return markup
 
 
 def generate_db_chats_menu(offset: int=0, max:int = 5):
