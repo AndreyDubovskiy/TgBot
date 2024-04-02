@@ -7,6 +7,7 @@ TIME_MSG_COOLDOWN = 180
 
 LIST_POSTS = {}
 # {"name":{"text": str,
+#           "list_posts:: [str]
 #          "urls": [str],
 #          "photos": [str],
 #           "videos": [str]
@@ -86,7 +87,7 @@ def get_id_post():
     return id
 
 
-def add_or_edit_post(key: str, text: str = None, urls: list = None, photos: list = None, videos: list = None):
+def add_or_edit_post(key: str, text: str = None, urls: list = None, photos: list = None, videos: list = None, list_posts: list = None):
     global LIST_POSTS
     try:
         v_key = key
@@ -94,9 +95,11 @@ def add_or_edit_post(key: str, text: str = None, urls: list = None, photos: list
         v_urls = urls
         v_photos = photos
         v_videos = videos
+        v_list_text = list_posts
         id = get_id_post()
         LIST_POSTS[v_key] = {'text': v_text,
-                                 'urls': v_urls,
+                             'list_posts': v_list_text,
+                             'urls': v_urls,
                              'photos': v_photos,
                              'videos': v_videos,
                              'id': id}

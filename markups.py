@@ -37,6 +37,11 @@ def generate_yes_no():
     markup.add(types.InlineKeyboardButton(text="❌Відмінити❌", callback_data="/cancel"))
     return markup
 
+def generate_ready_exit():
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    markup.add(types.InlineKeyboardButton(text="✅Готово✅", callback_data="/yes_ready"))
+    markup.add(types.InlineKeyboardButton(text="❌Відмінити❌", callback_data="/cancel"))
+    return markup
 
 def generate_db_chats_menu(offset: int=0, max:int = 5):
     chats_list = db.get_other_user_chats()

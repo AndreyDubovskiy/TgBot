@@ -46,14 +46,33 @@ class TgAccState(UserState):
             return Response(text="Введіть наступним повідомленням номер телефону бота у форматі +380661231212:", buttons=markups.generate_cancel())
         elif self.edit == "session_phone":
             self.session_phone = message
-            config_controller.add_or_edit_tg_acc(self.session_name, self.api_id, self.api_hash, self.session_phone)
             self.edit = "session_password"
             return Response(text="Введіть наступним повідомленням пароль до акаунту (якщо його немає, поставте крапку):",
                             buttons=markups.generate_cancel())
         elif self.edit == "session_password":
             if message != ".":
                 self.password = message
-                config_controller.add_or_edit_tg_acc(self.session_name, self.api_id, self.api_hash, self.session_phone, password=self.password)
             else:
-                config_controller.add_or_edit_tg_acc(self.session_name, self.api_id, self.api_hash, self.session_phone)
-            return Response(text="Акаунт збережено!\nМожливо при запуску запросити код, який прийде на акаунт", redirect="/tgacc")
+                self.password = None
+            self.edit = "session_api_id"
+            return Response(text="Введіть наступним повідомленням API ID до акаунту (поставте крапку, якщо залишити стандартним. Не рекомендую)", buttons=markups.generate_cancel())
+
+        elif self.edit == "session_api_id":
+            if message != ".":
+                self.api_id = message
+                self.edit = "session_api_hash"
+                return Response(
+                    text="Введіть наступним повідомленням API HASH до акаунту:",
+                    buttons=markups.generate_cancel())
+            else:
+                config_controller.add_or_edit_tg_acc(self.session_name, self.api_id, self.api_hash, self.session_phone,
+                                                     password=self.password)
+                return Response(text="Акаунт збережено!\nМожливо при запуску запросити код, який прийде на акаунт",
+                                redirect="/tgacc")
+        elif self.edit == "session_api_hash":
+            self.api_hash = message
+            self.edit = None
+            config_controller.add_or_edit_tg_acc(self.session_name, self.api_id, self.api_hash, self.session_phone,
+                                                 password=self.password)
+            return Response(text="Акаунт збережено!\nМожливо при запуску запросити код, який прийде на акаунт",
+                            redirect="/tgacc")

@@ -29,6 +29,7 @@ class PostState(UserState):
         self.newphotos = None
         self.newvideos = None
         self.newtext = None
+        self.newlistposts = []
         self.is_test = False
         self.is_other = False
         self.hash_phone = None
@@ -72,9 +73,14 @@ class PostState(UserState):
                                         text="Розсилка розпочата, очікуйте повідомлення про завершення...")
             count = 0
             error = 0
-            text_post = config_controller.LIST_POSTS[current_post_name]['text']
-            list_photos = config_controller.LIST_POSTS[current_post_name]['photos']
-            list_videos = config_controller.LIST_POSTS[current_post_name]['videos']
+            if config_controller.LIST_POSTS[current_post_name].get('list_posts', None) != None and len(
+                    config_controller.LIST_POSTS[current_post_name].get('list_posts', [])) != 0:
+                post = random.choice(config_controller.LIST_POSTS[current_post_name]['list_posts'])
+            else:
+                post = config_controller.LIST_POSTS[current_post_name]
+            text_post = post['text']
+            list_photos = post['photos']
+            list_videos = post['videos']
             entity = await client.get_entity(user_name)
             name_user = entity.first_name
             if entity.last_name:
@@ -129,9 +135,14 @@ class PostState(UserState):
                     break
                 try:
                     chat_id = user.tg_id
-                    text_post = config_controller.LIST_POSTS[current_post_name]['text']
-                    list_photos = config_controller.LIST_POSTS[current_post_name]['photos']
-                    list_videos = config_controller.LIST_POSTS[current_post_name]['videos']
+                    if config_controller.LIST_POSTS[current_post_name].get('list_posts', None) != None and len(
+                            config_controller.LIST_POSTS[current_post_name].get('list_posts', [])) != 0:
+                        post = random.choice(config_controller.LIST_POSTS[current_post_name]['list_posts'])
+                    else:
+                        post = config_controller.LIST_POSTS[current_post_name]
+                    text_post = post['text']
+                    list_photos = post['photos']
+                    list_videos = post['videos']
                     if text_post.count("%name_k%") != 0:
                         if user.name_k == None or user.name_k == "":
                             continue
@@ -197,9 +208,13 @@ class PostState(UserState):
                     await asyncio.sleep(time_sleep)
                     try:
                         chat_id = user.tg_id
-                        text_post = config_controller.LIST_POSTS[current_post_name]['text']
-                        list_photos = config_controller.LIST_POSTS[current_post_name]['photos']
-                        list_videos = config_controller.LIST_POSTS[current_post_name]['videos']
+                        if config_controller.LIST_POSTS[current_post_name].get('list_posts', None) != None and len(config_controller.LIST_POSTS[current_post_name].get('list_posts', [])) != 0:
+                            post = random.choice(config_controller.LIST_POSTS[current_post_name]['list_posts'])
+                        else:
+                            post = config_controller.LIST_POSTS[current_post_name]
+                        text_post = post['text']
+                        list_photos = post['photos']
+                        list_videos = post['videos']
                         if text_post.count("%name_k%") != 0:
                             if user.name_k == None or user.name_k == "":
                                 continue
@@ -273,15 +288,17 @@ class PostState(UserState):
         if self.edit == "addname":
             self.newname = message
             self.edit = "addpost"
-            return Response(text="Відправте пост одним повідомленням (можна з фото або відео, та текстом, але одним повідомленням):", buttons=markups.generate_cancel())
+            return Response(text="Відправляйте постів скільки потрібно. Буде обиратись один випадковим чином та відправлятись.\n\nВідправте пост одним повідомленням (можна з фото або відео, та текстом, але одним повідомленням):", buttons=markups.generate_ready_exit())
         elif self.edit == "addpost":
             self.newtext = message
-            self.edit = None
-            if config_controller.add_or_edit_post(self.newname, text=self.newtext, urls=self.newurls,
-                                                  photos=self.newphotos, videos=self.newvideos):
-                return Response(text="Успішно додано!", is_end=True, redirect="/postlist")
-            else:
-                return Response(text="Помилка!", is_end=True, redirect="/postlist")
+            self.edit = "addpost"
+            self.newlistposts.append({'text': self.newtext,
+                                      'urls': self.newurls,
+                                      'photos': self.newphotos,
+                                      'videos': self.newvideos})
+            return Response(
+                text="Відправляйте постів скільки потрібно. Буде обиратись один випадковим чином та відправлятись.\n\nВідправте пост одним повідомленням (можна з фото або відео, та текстом, але одним повідомленням):",
+                buttons=markups.generate_ready_exit())
         elif self.edit == "code_enter":
             code = message.replace(".", "").replace("-", "").replace(" ", "")
             try:
@@ -345,17 +362,28 @@ class PostState(UserState):
                 return Response(is_end=True, redirect="/menu")
             else:
                 return Response(is_end=True, redirect="/postlist")
+        elif data_btn == "/yes_ready":
+            self.edit = None
+            if config_controller.add_or_edit_post(self.newname,
+                                                  self.newlistposts[0]['text'],
+                                                  self.newlistposts[0]['urls'],
+                                                  self.newlistposts[0]['photos'],
+                                                  self.newlistposts[0]['videos'],
+                                                  self.newlistposts):
+                return Response(text="Успішно додані пости!", redirect="/postlist")
+            else:
+                return Response(text="Помилка при додаванні!", redirect="/postlist")
         elif data_btn == "/yes":
             await self.multiple_user_send(self.clients, self.user_chat_id, self.count_send, self.list_users_tmp, self.current_name, self.is_add_other)
             return Response(text="Розсилка закінчена!", redirect="/menu")
         elif data_btn == "/accnext":
             if len(config_controller.LIST_TG_ACC)-((self.current_page_acc+1)*self.max_on_page) > 0:
                 self.current_page_acc+=1
-            return Response(text="Оберіть акаунт чи акаунти:", buttons=markups.generate_tg_acc_menu(self.current_page_acc*self.max_on_page, self.max_on_page, with_ready=True))
+            return Response(text="Оберіть акаунт чи акаунти:", buttons=markups.generate_tg_acc_menu(self.current_page_acc*self.max_on_page, self.max_on_page, with_ready=True, list_check=self.clients_names))
         elif data_btn =="/accprev":
             if self.current_page_acc > 0:
                 self.current_page_acc-=1
-            return Response(text="Оберіть акаунт чи акаунти:", buttons=markups.generate_tg_acc_menu(self.current_page_acc*self.max_on_page, self.max_on_page, with_ready=True))
+            return Response(text="Оберіть акаунт чи акаунти:", buttons=markups.generate_tg_acc_menu(self.current_page_acc*self.max_on_page, self.max_on_page, with_ready=True, list_check=self.clients_names))
         elif data_btn == "/cnext":
             if len(self.list_chats_other)-((self.current_page_chat+1)*self.max_on_page) > 0:
                 self.current_page_chat+=1
@@ -380,6 +408,8 @@ class PostState(UserState):
                 text+= "\nКількість прикріплених фото: " + str(len(config_controller.LIST_POSTS[self.current_name]['photos'])) + "\n"
             if config_controller.LIST_POSTS[self.current_name]['videos'] != None:
                 text+= "\nКількість прикріплених відео: " + str(len(config_controller.LIST_POSTS[self.current_name]['videos'])) + "\n"
+            text += "\nКількість варіацій поста: " + str(
+                len(config_controller.LIST_POSTS[self.current_name].get('list_posts', []))) + "\n"
             if config_controller.LIST_POSTS[self.current_name]['text'] != None:
                 text+="\nТекст поста:\n" + config_controller.LIST_POSTS[self.current_name]['text']
             return Response(text="Назва поста: " + self.current_name + text, buttons=markups.generate_post_semimenu())
@@ -515,9 +545,13 @@ class PostState(UserState):
                 with open(f'post_tmp/{str(config_controller.get_id_post())}_{i.file_id}.mp4', 'wb') as file:
                     file.write(bytess)
                 self.newvideos.append(f'post_tmp/{str(config_controller.get_id_post())}_{i.file_id}.mp4')
-            self.edit = None
-            if config_controller.add_or_edit_post(self.newname, text=self.newtext, urls=self.newurls,
-                                                  photos=self.newphotos, videos=self.newvideos):
-                return Response(text="Успішно додано!", is_end=True, redirect="/postlist")
-            else:
-                return Response(text="Помилка!", is_end=True, redirect="/postlist")
+            self.edit = "addpost"
+
+            self.newlistposts.append({'text': self.newtext,
+                                      'urls': self.newurls,
+                                      'photos': self.newphotos,
+                                      'videos': self.newvideos})
+
+            return Response(
+                text="Відправляйте постів скільки потрібно. Буде обиратись один випадковим чином та відправлятись.\n\nВідправте пост одним повідомленням (можна з фото або відео, та текстом, але одним повідомленням):",
+                buttons=markups.generate_ready_exit())
