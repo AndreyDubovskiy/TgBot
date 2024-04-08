@@ -286,6 +286,8 @@ class PostState(UserState):
         if not (self.user_id in config_controller.list_is_loggin_admins):
             return Response(text="У вас недостатньо прав!", is_end=True)
         if self.edit == "addname":
+            if len(message) > 50:
+                return Response(text="Ваша назва більша за 50 символів! Введіть меншу назву: ", buttons=markups.generate_cancel())
             self.newname = message
             self.edit = "addpost"
             return Response(text="Відправляйте постів скільки потрібно. Буде обиратись один випадковим чином та відправлятись.\n\nВідправте пост одним повідомленням (можна з фото або відео, та текстом, але одним повідомленням):", buttons=markups.generate_ready_exit())

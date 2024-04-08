@@ -23,6 +23,11 @@ async def off(message):
     await bot.send_message(chat_id=message.chat.id, text="Вимикаю...")
     sys.exit()
 
+@bot.message_handler(commands=['clear_post'])
+async def off(message):
+    config_controller.LIST_POSTS = {}
+    config_controller.write_ini()
+    await bot.send_message(chat_id=message.chat.id, text="Стираю...")
 
 @bot.message_handler(commands=['passwordadmin','help', 'passwordmoder', 'helpadmin', 'log', 'textafter', 'start', 'texthelp', 'texthello', 'textcontact','menu'])
 async def passwordadmin(message):
