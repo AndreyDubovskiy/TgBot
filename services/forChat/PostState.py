@@ -8,7 +8,7 @@ import config_controller
 import db.database as db
 from telethon import TelegramClient
 import asyncio
-from telethon.errors.rpcerrorlist import PeerFloodError, UserPrivacyRestrictedError, FloodWaitError
+from telethon.errors.rpcerrorlist import PeerFloodError, UserPrivacyRestrictedError, FloodWaitError, UserDeletedError, UserInvalidError, UserDeactivatedError, UsernameInvalidError
 import random
 class PostState(UserState):
     def __init__(self, user_id: str, user_chat_id: str, bot: AsyncTeleBot, user_name: str):
@@ -127,10 +127,12 @@ class PostState(UserState):
             count = 0
             error = 0
             tmp_error = 0
+            current_user = None
             msg = await self.bot.send_message(chat_id=user_chat_id,
                                               text="Статус "+self.clients_names[self.clients.index(client)]+" ["+config_controller.LIST_TG_ACC[self.clients_names[self.clients.index(client)]]['phone']+"]"+":\nВідправлено: " + str(count) + " з " + str(
                                                   count_send) + "\nПомилок: " + str(error))
             for user in list_users:
+                current_user = user
                 if count >= count_send:
                     break
                 try:
@@ -185,6 +187,17 @@ class PostState(UserState):
                     tmp_error = 0
                     await self.bot.edit_message_text(
                         text="Статус "+self.clients_names[self.clients.index(client)]+" ["+config_controller.LIST_TG_ACC[self.clients_names[self.clients.index(client)]]['phone']+"]"+":\nВідправлено: " + str(count) + " з " + str(count_send) + "\nПомилок: " + str(
+                            error), chat_id=msg.chat.id, message_id=msg.id)
+                    if count != count_send:
+                        await asyncio.sleep(self.cooldoun_msg + self.get_cool_down())
+                except (UserDeletedError, UserInvalidError, UserDeactivatedError, UsernameInvalidError) as ex:
+                    print("DELETE USER", current_user, ex)
+                    db.delete_userother_by_tg_id(current_user.tg_id)
+                    await self.bot.edit_message_text(
+                        text="[Знайдено видалений акаунт]\nСтатус " + self.clients_names[self.clients.index(client)] + " [" +
+                             config_controller.LIST_TG_ACC[self.clients_names[self.clients.index(client)]][
+                                 'phone'] + "]" + ":\nВідправлено: " + str(count) + " з " + str(
+                            count_send) + "\nПомилок: " + str(
                             error), chat_id=msg.chat.id, message_id=msg.id)
                     if count != count_send:
                         await asyncio.sleep(self.cooldoun_msg + self.get_cool_down())
