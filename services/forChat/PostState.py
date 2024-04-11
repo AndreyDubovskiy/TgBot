@@ -203,6 +203,7 @@ class PostState(UserState):
                         await asyncio.sleep(self.cooldoun_msg + self.get_cool_down())
                 except FloodWaitError as ex:
                     time_sleep = int(str(ex).split("A wait of ")[1].split(" ")[0])
+                    print(self.clients_names[self.clients.index(client)], ex)
                     print("WAIT", time_sleep)
 
                     if time_sleep > 1000:
@@ -273,7 +274,7 @@ class PostState(UserState):
                         if count != count_send:
                             await asyncio.sleep(self.cooldoun_msg + self.get_cool_down())
                     except Exception as ex:
-                        print(ex)
+                        print(self.clients_names[self.clients.index(client)], ex)
                         error += 1
                         tmp_error += 1
                         if tmp_error > 5:
