@@ -292,7 +292,7 @@ class PostState(UserState):
                         if tmp_error > 5:
                             return
                         if not str(ex).startswith("No user has"):
-                            await asyncio.sleep(random.randint(30))
+                            await asyncio.sleep(5, random.randint(30))
                 except Exception as ex:
                     print(self.clients_names[self.clients.index(client)], ex)
                     if str(ex).startswith("No user has"):
@@ -312,7 +312,7 @@ class PostState(UserState):
                     if tmp_error > 5:
                         return
                     if not str(ex).startswith("No user has"):
-                        await asyncio.sleep(random.randint(30))
+                        await asyncio.sleep(5, random.randint(30))
             #await self.bot.delete_message(chat_id=msg.chat.id, message_id=msg.id)
             await client.disconnect()
             await self.bot.edit_message_text(
