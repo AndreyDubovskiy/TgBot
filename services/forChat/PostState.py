@@ -275,16 +275,44 @@ class PostState(UserState):
                             await asyncio.sleep(self.cooldoun_msg + self.get_cool_down())
                     except Exception as ex:
                         print(self.clients_names[self.clients.index(client)], ex)
+                        if str(ex).startswith("No user has"):
+                            print("DELETE USER", current_user, ex)
+                            db.delete_userother_by_tg_id(current_user.tg_id)
+                            await self.bot.edit_message_text(
+                                text="[Знайдено видалений акаунт]\nСтатус " + self.clients_names[
+                                    self.clients.index(client)] + " [" +
+                                     config_controller.LIST_TG_ACC[self.clients_names[self.clients.index(client)]][
+                                         'phone'] + "]" + ":\nВідправлено: " + str(count) + " з " + str(
+                                    count_send) + "\nПомилок: " + str(
+                                    error), chat_id=msg.chat.id, message_id=msg.id)
+                            if count != count_send:
+                                await asyncio.sleep(self.cooldoun_msg + self.get_cool_down())
                         error += 1
                         tmp_error += 1
                         if tmp_error > 5:
                             return
+                        if not str(ex).startswith("No user has"):
+                            await asyncio.sleep(random.randint(30))
                 except Exception as ex:
                     print(self.clients_names[self.clients.index(client)], ex)
+                    if str(ex).startswith("No user has"):
+                        print("DELETE USER", current_user, ex)
+                        db.delete_userother_by_tg_id(current_user.tg_id)
+                        await self.bot.edit_message_text(
+                            text="[Знайдено видалений акаунт]\nСтатус " + self.clients_names[
+                                self.clients.index(client)] + " [" +
+                                 config_controller.LIST_TG_ACC[self.clients_names[self.clients.index(client)]][
+                                     'phone'] + "]" + ":\nВідправлено: " + str(count) + " з " + str(
+                                count_send) + "\nПомилок: " + str(
+                                error), chat_id=msg.chat.id, message_id=msg.id)
+                        if count != count_send:
+                            await asyncio.sleep(self.cooldoun_msg + self.get_cool_down())
                     error += 1
                     tmp_error += 1
                     if tmp_error > 5:
                         return
+                    if not str(ex).startswith("No user has"):
+                        await asyncio.sleep(random.randint(30))
             #await self.bot.delete_message(chat_id=msg.chat.id, message_id=msg.id)
             await client.disconnect()
             await self.bot.edit_message_text(

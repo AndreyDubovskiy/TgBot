@@ -12,6 +12,9 @@ import os
 
 #tokkey = '6338019607:AAGprZFmi9nT7GZqIWnbRQly8vs1A2jquqU'
 
+
+#tokkey = '6729587033:AAESDJSwGSgA8zxfLLEW1sOvg6HPF68LzB4'
+
 tokkey = os.environ.get('BOT_TOKEN')
 
 bot = AsyncTeleBot(tokkey)
