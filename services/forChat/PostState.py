@@ -322,7 +322,7 @@ class PostState(UserState):
         except Exception as ex:
             print(self.clients_names[self.clients.index(client)], ex)
             await client.disconnect()
-            await self.bot.send_message(chat_id=self.user_chat_id, text=self.clients_names[self.clients.index(client)] + " Помилка!")
+            await self.bot.send_message(chat_id=self.user_chat_id, text=self.clients_names[self.clients.index(client)] + " Помилка!\n\n"+str(ex))
 
     async def next_msg(self, message: str):
         if not (self.user_id in config_controller.list_is_loggin_admins):
