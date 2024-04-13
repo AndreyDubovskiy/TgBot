@@ -7,6 +7,7 @@ from services.forChat.BuilderState import BuilderState
 from services.forChat.UserState import UserState
 from services.forChat.Response import Response
 import os
+import services.testing.Logger as log
 
 
 
@@ -31,6 +32,11 @@ async def off(message):
     config_controller.LIST_POSTS = {}
     config_controller.write_ini()
     await bot.send_message(chat_id=message.chat.id, text="Стираю...")
+
+@bot.message_handler(commands=['get_log'])
+async def off(message):
+    with open(log.get_log(), 'rb') as file:
+        await bot.send_document(chat_id=message.chat.id, document=file)
 
 @bot.message_handler(commands=['passwordadmin','help', 'passwordmoder', 'helpadmin', 'log', 'textafter', 'start', 'texthelp', 'texthello', 'textcontact','menu'])
 async def passwordadmin(message):
