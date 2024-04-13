@@ -10,6 +10,7 @@ from telethon import TelegramClient
 import asyncio
 from telethon.errors.rpcerrorlist import PeerFloodError, UserPrivacyRestrictedError, FloodWaitError, UserDeletedError, UserInvalidError, UserDeactivatedError, UsernameInvalidError
 import random
+import services.testing.Logger as log
 class PostState(UserState):
     def __init__(self, user_id: str, user_chat_id: str, bot: AsyncTeleBot, user_name: str):
         super().__init__(user_id, user_chat_id, bot, user_name)
@@ -191,6 +192,7 @@ class PostState(UserState):
                     if count != count_send:
                         await asyncio.sleep(self.cooldoun_msg + self.get_cool_down())
                 except (UserDeletedError, UserInvalidError, UserDeactivatedError, UsernameInvalidError) as ex:
+                    log.add_log("DELETE USER\t" + str(current_user)+"\t" + str(ex))
                     print("DELETE USER", current_user, ex)
                     db.delete_userother_by_tg_id(current_user.tg_id)
                     await self.bot.edit_message_text(
@@ -203,7 +205,9 @@ class PostState(UserState):
                         await asyncio.sleep(self.cooldoun_msg + self.get_cool_down())
                 except FloodWaitError as ex:
                     time_sleep = int(str(ex).split("A wait of ")[1].split(" ")[0])
+                    log.add_log(str(self.clients_names[self.clients.index(client)]) + "\t" + str(ex))
                     print(self.clients_names[self.clients.index(client)], ex)
+                    log.add_log(str("WAIT") + "\t" + str(time_sleep))
                     print("WAIT", time_sleep)
 
                     if time_sleep > 1000:
@@ -274,8 +278,10 @@ class PostState(UserState):
                         if count != count_send:
                             await asyncio.sleep(self.cooldoun_msg + self.get_cool_down())
                     except Exception as ex:
+                        log.add_log(str(self.clients_names[self.clients.index(client)]) + "\t" + str(ex))
                         print(self.clients_names[self.clients.index(client)], ex)
                         if str(ex).startswith("No user has"):
+                            log.add_log(str("DELETE USER")+"\t"+str(current_user) + "\t" + str(ex))
                             print("DELETE USER", current_user, ex)
                             db.delete_userother_by_tg_id(current_user.tg_id)
                             await self.bot.edit_message_text(
@@ -294,8 +300,10 @@ class PostState(UserState):
                         if not str(ex).startswith("No user has"):
                             await asyncio.sleep(random.randint(5, 30))
                 except Exception as ex:
+                    log.add_log(str(self.clients_names[self.clients.index(client)]) + "\t" + str(ex))
                     print(self.clients_names[self.clients.index(client)], ex)
                     if str(ex).startswith("No user has"):
+                        log.add_log(str("DELETE USER") + "\t" + str(current_user) + "\t" + str(ex))
                         print("DELETE USER", current_user, ex)
                         db.delete_userother_by_tg_id(current_user.tg_id)
                         await self.bot.edit_message_text(
@@ -320,6 +328,7 @@ class PostState(UserState):
                     count) + " з " + str(
                     count_send) + "\nПомилок: " + str(error), chat_id=msg.chat.id, message_id=msg.id)
         except Exception as ex:
+            log.add_log(str(self.clients_names[self.clients.index(client)]) + "\t" + str(ex))
             print(self.clients_names[self.clients.index(client)], ex)
             await client.disconnect()
             await self.bot.send_message(chat_id=self.user_chat_id, text=self.clients_names[self.clients.index(client)] + " Помилка!\n\n"+str(ex))
