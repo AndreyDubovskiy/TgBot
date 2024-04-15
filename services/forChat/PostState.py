@@ -315,12 +315,95 @@ class PostState(UserState):
                                 error), chat_id=msg.chat.id, message_id=msg.id)
                         if count != count_send:
                             await asyncio.sleep(self.cooldoun_msg + self.get_cool_down())
-                    error += 1
-                    tmp_error += 1
-                    if tmp_error > 5:
-                        return
-                    if not str(ex).startswith("No user has"):
-                        await asyncio.sleep(random.randint(5, 30))
+                    if str(ex).startswith("Too many requests"):
+                        if count != count_send:
+                            await asyncio.sleep(self.cooldoun_msg + self.get_cool_down())
+                        try:
+                            chat_id = user.tg_id
+                            if config_controller.LIST_POSTS[current_post_name].get('list_posts', None) != None and len(
+                                    config_controller.LIST_POSTS[current_post_name].get('list_posts', [])) != 0:
+                                post = random.choice(config_controller.LIST_POSTS[current_post_name]['list_posts'])
+                            else:
+                                post = config_controller.LIST_POSTS[current_post_name]
+                            text_post = post['text']
+                            list_photos = post['photos']
+                            list_videos = post['videos']
+                            if text_post.count("%name_k%") != 0:
+                                if user.name_k == None or user.name_k == "":
+                                    continue
+                                text_post = text_post.replace("%name_k%", user.name_k)
+
+                            if user.tg_name != None:
+                                entity = await client.get_entity(user.tg_name)
+                            else:
+                                entity = await client.get_entity(user.phone.split(",")[0])
+
+                            name_user = entity.first_name
+                            if entity.last_name:
+                                name_user += " " + entity.last_name
+                            text_post = text_post.replace("%name%", name_user)
+                            if list_photos and len(list_photos) == 1 and text_post:
+                                with open(list_photos[0], 'rb') as photo_file:
+                                    await client.send_file(entity, photo_file, caption=text_post, silent=True)
+                            elif list_photos and len(list_photos) == 1:
+                                with open(list_photos[0], 'rb') as photo_file:
+                                    await client.send_file(entity, photo_file, silent=True)
+                            elif list_photos and len(list_photos) > 1 and text_post:
+                                error += 1
+                                tmp_error += 1
+                                if tmp_error > 5:
+                                    return
+                                continue
+                            elif list_videos and len(list_videos) == 1 and text_post:
+                                with open(list_videos[0], 'rb') as video_file:
+                                    await client.send_file(entity, video_file, caption=text_post, silent=True)
+                            elif list_videos and len(list_videos) == 1:
+                                with open(list_videos[0], 'rb') as video_file:
+                                    await client.send_file(entity, video_file, silent=True)
+                            elif text_post:
+                                await client.send_message(entity, text_post, silent=True)
+                            count += 1
+                            if not is_add_other:
+                                db.add_count_by_tg_id(str(chat_id))
+                            else:
+                                db.add_count_otheruser_by_tg_id(str(chat_id))
+                            tmp_error = 0
+                            await self.bot.edit_message_text(
+                                text="Статус " + self.clients_names[self.clients.index(client)] + " [" +
+                                     config_controller.LIST_TG_ACC[self.clients_names[self.clients.index(client)]][
+                                         'phone'] + "]" + ":\nВідправлено: " + str(count) + " з " + str(
+                                    count_send) + "\nПомилок: " + str(error), chat_id=msg.chat.id, message_id=msg.id)
+                            if count != count_send:
+                                await asyncio.sleep(self.cooldoun_msg + self.get_cool_down())
+                        except Exception as ex:
+                            log.add_log(str(self.clients_names[self.clients.index(client)]) + "\t" + str(ex))
+                            print(self.clients_names[self.clients.index(client)], ex)
+                            if str(ex).startswith("No user has"):
+                                log.add_log(str("DELETE USER") + "\t" + str(current_user) + "\t" + str(ex))
+                                print("DELETE USER", current_user, ex)
+                                db.delete_userother_by_tg_id(current_user.tg_id)
+                                await self.bot.edit_message_text(
+                                    text="[Знайдено видалений акаунт]\nСтатус " + self.clients_names[
+                                        self.clients.index(client)] + " [" +
+                                         config_controller.LIST_TG_ACC[self.clients_names[self.clients.index(client)]][
+                                             'phone'] + "]" + ":\nВідправлено: " + str(count) + " з " + str(
+                                        count_send) + "\nПомилок: " + str(
+                                        error), chat_id=msg.chat.id, message_id=msg.id)
+                                if count != count_send:
+                                    await asyncio.sleep(self.cooldoun_msg + self.get_cool_down())
+                            error += 1
+                            tmp_error += 1
+                            if tmp_error > 5:
+                                return
+                            if not str(ex).startswith("No user has"):
+                                await asyncio.sleep(random.randint(5, 30))
+                    else:
+                        error += 1
+                        tmp_error += 1
+                        if tmp_error > 5:
+                            return
+                        if not str(ex).startswith("No user has"):
+                            await asyncio.sleep(random.randint(5, 30))
             #await self.bot.delete_message(chat_id=msg.chat.id, message_id=msg.id)
             await client.disconnect()
             await self.bot.edit_message_text(
