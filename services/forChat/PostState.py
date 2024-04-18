@@ -156,6 +156,8 @@ class PostState(UserState):
                     else:
                         entity = await client.get_entity(user.phone.split(",")[0])
 
+                    await asyncio.sleep(random.randint(30, 60))
+
                     name_user = entity.first_name
                     if entity.last_name:
                         name_user += " " + entity.last_name
@@ -242,6 +244,8 @@ class PostState(UserState):
                             entity = await client.get_entity(user.tg_name)
                         else:
                             entity = await client.get_entity(user.phone.split(",")[0])
+
+                        await asyncio.sleep(random.randint(30, 60))
 
                         name_user = entity.first_name
                         if entity.last_name:
@@ -337,6 +341,8 @@ class PostState(UserState):
                                 entity = await client.get_entity(user.tg_name)
                             else:
                                 entity = await client.get_entity(user.phone.split(",")[0])
+
+                            await asyncio.sleep(random.randint(30, 60))
 
                             name_user = entity.first_name
                             if entity.last_name:
